@@ -15,6 +15,7 @@ nbproject/
 nb-build.xml
 nb-configuration.xml
 
+.idea/
 *.iml
 
 # Maven
