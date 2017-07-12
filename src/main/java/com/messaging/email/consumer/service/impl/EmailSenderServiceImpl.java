@@ -37,6 +37,9 @@ public class EmailSenderServiceImpl implements EmailSenderService {
     @Value("${mail.config.recipients}")
     private String adminRecipients;
 
+    @Value("${mail.config.username}")
+    private String mailUsername;
+
     @Autowired
     @Qualifier("gson")
     private Gson gson;
@@ -52,7 +55,10 @@ public class EmailSenderServiceImpl implements EmailSenderService {
             final MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             final MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             Template template;
-            switch(emailRequest.getEmailType()){
+            EmailRequest.EmailType emailType = EmailRequest.EmailType.fromString(emailRequest.getEmailType());
+            if(emailType == null)
+                throw new EmailSenderException("No email type was provided");
+            switch(emailType){
                 case ERROR:
                     template = velocityEngine.getTemplate(ERROR_EMAIL_TEMPLATE_PATH);
                     sendErrorEmail(emailRequest, helper, template);
@@ -83,7 +89,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         final StringWriter writer = new StringWriter();
         template.merge(context, writer);
         helper.setText(writer.toString(), true);
-        helper.setFrom("Custom Error Reporter");
+        helper.setFrom(mailUsername);
         helper.setSubject(String.format("%s error", request.getApplicationId()));
         javaMailSender.send(helper.getMimeMessage());
     }
