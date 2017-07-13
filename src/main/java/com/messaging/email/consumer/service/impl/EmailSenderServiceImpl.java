@@ -1,11 +1,11 @@
 package com.messaging.email.consumer.service.impl;
 
 import com.amazon.sqs.javamessaging.message.SQSTextMessage;
-import com.dareu.web.dto.jms.EmailRequest;
-import com.dareu.web.dto.jms.EmailType;
-import com.dareu.web.dto.jms.WelcomeEmailPayload;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.messaging.dto.EmailRequest;
+import com.messaging.dto.EmailType;
+import com.messaging.dto.WelcomeEmailPayload;
 import com.messaging.email.consumer.exception.EmailSenderException;
 import com.messaging.email.consumer.service.EmailSenderService;
 import org.apache.log4j.Logger;
