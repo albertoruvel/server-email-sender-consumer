@@ -104,7 +104,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         template.merge(context, writer);
         helper.setText(writer.toString(), true);
         helper.setFrom(mailUsername);
-        helper.setSubject(String.format("%s error", emailRequest.getApplicationId()));
+        helper.setSubject("Welcome to DareU!");
         javaMailSender.send(helper.getMimeMessage());
     }
 
