@@ -1,0 +1,12 @@
+<!DOCTYPE HTML>
+       <html>
+          <body>
+            <h3>Hello ${request.name}!</h3>
+            <p>You just registered to DareU, the place where people meet and dare themselves just for fun</p>
+            <p>You have multiple choices to connect to other persons and dare/get dared, check out <a href="dareu.albertoruvel.com">DareU</a> to get more info</p>
+
+            <p>insert more info and stuff here</p>
+
+            <p>Do not reply to this email, as this has been sent automatically by http://albertoruvel.com</p>
+          </body>
+       </html>
