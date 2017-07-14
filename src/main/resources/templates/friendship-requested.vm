@@ -1,0 +1,10 @@
+<!DOCTYPE HTML>
+       <html>
+          <body>
+            <h3>Hello ${request.requestedUserName}!</h3>
+            <p>Looks like <a href="http://dareu.albertoruvel.com">${request.userRequestingName}</a> is requesting for a connection with you.</p>
+            <p>You You can accept or decline this request at <a href="dareu.albertoruvel.com">DareU</a></p>
+
+            <p>Do not reply to this email, as this has been sent automatically by http://albertoruvel.com</p>
+          </body>
+       </html>

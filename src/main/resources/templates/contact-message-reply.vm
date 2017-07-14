@@ -1,0 +1,11 @@
+<!DOCTYPE HTML>
+       <html>
+          <body>
+            <h3>Hello ${request.recipientName}!</h3>
+            <p>Looks like the contact message you sent to <a href="http://dareu.albertoruvel.com">${request.userRequestingName}</a> has been replied by the administrator:</p>
+            <p>${request.body}</p>
+
+            <p>We hope being useful to you, if you have any doubts, do not hesitate to contact us again :)</p>
+            <p>Do not reply to this email, as this has been sent automatically by http://albertoruvel.com</p>
+          </body>
+       </html>

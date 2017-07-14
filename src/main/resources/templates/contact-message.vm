@@ -1,0 +1,11 @@
+<!DOCTYPE HTML>
+       <html>
+          <body>
+            <h3>Contact Message received!</h3>
+            <p><strong>${request.name}</strong></p>
+            <p>${request.body}</p>
+
+            <p>Message was sent at ${request.date}, so check the admin console you lazy shit!</p>
+            <p>Do not reply to this email, as this has been sent automatically by http://albertoruvel.com</p>
+          </body>
+       </html>

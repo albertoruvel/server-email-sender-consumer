@@ -3,9 +3,7 @@ package com.messaging.email.consumer.service.impl;
 import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.messaging.dto.email.EmailRequest;
-import com.messaging.dto.email.EmailType;
-import com.messaging.dto.email.WelcomeEmailPayload;
+import com.messaging.dto.email.*;
 import com.messaging.email.consumer.exception.EmailSenderException;
 import com.messaging.email.consumer.service.EmailSenderService;
 import org.apache.log4j.Logger;
@@ -29,7 +27,10 @@ import java.io.StringWriter;
 public class EmailSenderServiceImpl implements EmailSenderService {
 
     private static final String ERROR_EMAIL_TEMPLATE_PATH = "/templates/error-message-template.vm";
+    private static final String CONTACT_MESSAGE_TEMPLATE_PATH = "/templates/contact-message.vm";
     private static final String WELCOME_USER_TEMPLATE_PATH = "/templates/welcome-user-template.vm";
+    private static final String REQUESTED_FRIENDSHIP_TEMPLATE_PATH = "/templates/friendship-requested.vm";
+    private static final String CONTACT_MESSAGE_REPLY_TEMPLATE_PATH = "/templates/contact-message-reply.vm";
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -60,7 +61,6 @@ public class EmailSenderServiceImpl implements EmailSenderService {
             EmailType emailType = EmailType.fromString(emailTypeValue);
             if(emailType == null)
                 throw new EmailSenderException("No email type was provided");
-
             dispatchEmailRequest(textMessage, emailType);
         }catch(JMSException ex){
             throw new EmailSenderException("Error reading message content: " + ex.getMessage());
@@ -84,43 +84,47 @@ public class EmailSenderServiceImpl implements EmailSenderService {
             case ERROR:
                 emailRequest = gson.fromJson(jsonText, new TypeToken<EmailRequest<String>>(){}.getType());
                 template = velocityEngine.getTemplate(ERROR_EMAIL_TEMPLATE_PATH);
-                sendErrorEmail(emailRequest, helper, template);
+                sendEmail(emailRequest, helper, template, adminRecipients.split(","), String.format("%s error", emailRequest.getApplicationId()));
+
                 break;
             case USER_REGISTRATION:
                 emailRequest = gson.fromJson(jsonText, new TypeToken<EmailRequest<WelcomeEmailPayload>>(){}.getType());
                 template = velocityEngine.getTemplate(WELCOME_USER_TEMPLATE_PATH);
-                sendWelcomeUserEmail(emailRequest, helper, template);
+                sendEmail(emailRequest, helper, template, (String[])emailRequest.getRecipients().toArray(), "Welcome to DareU!");
+                break;
+            case CONTACT_MESSAGE_REPLY:
+                emailRequest = gson.fromJson(jsonText, new TypeToken<EmailRequest<ContactReplyEmailPayload>>(){}.getType());
+                template = velocityEngine.getTemplate(CONTACT_MESSAGE_REPLY_TEMPLATE_PATH);
+                sendEmail(emailRequest, helper, template, (String[])emailRequest.getRecipients().toArray(), "Your message has been replied!");
+                break;
+            case REQUESTED_FRIENDSHIP:
+                emailRequest = gson.fromJson(jsonText, new TypeToken<EmailRequest<RequestedFriendshipEmailRequest>>(){}.getType());
+                template = velocityEngine.getTemplate(REQUESTED_FRIENDSHIP_TEMPLATE_PATH);
+                sendEmail(emailRequest, helper, template, (String[])emailRequest.getRecipients().toArray(), "You have pending connection requests!");
+                break;
+            case CONTACT_MESSAGE:
+                emailRequest = gson.fromJson(jsonText, new TypeToken<EmailRequest<ContactEmailRequest>>(){}.getType());
+                template = velocityEngine.getTemplate(CONTACT_MESSAGE_TEMPLATE_PATH);
+                sendEmail(emailRequest, helper, template, (String[])emailRequest.getRecipients().toArray(), "New  contact message!");
+                break;
+            default:
+                log.info(String.format("Received email type %s as default, will skip it"));
                 break;
         }
     }
 
-    private void sendWelcomeUserEmail(EmailRequest<WelcomeEmailPayload> emailRequest, MimeMessageHelper helper, Template template)throws MessagingException {
-        //get user id
-        final WelcomeEmailPayload welcomePayload = emailRequest.getBody();
+    private void sendEmail(EmailRequest request, MimeMessageHelper helper, Template template, String[] recipients, String emailTitle)throws MessagingException{
+        Object payload = request.getBody();
         VelocityContext context = new VelocityContext();
-        context.put("request", welcomePayload);
-        helper.setTo(welcomePayload.getEmail());
-        final StringWriter writer = new StringWriter();
-        template.merge(context, writer);
-        helper.setText(writer.toString(), true);
-        helper.setFrom(mailUsername);
-        helper.setSubject("Welcome to DareU!");
-        javaMailSender.send(helper.getMimeMessage());
-    }
-
-    private final void sendErrorEmail(EmailRequest request, final MimeMessageHelper helper, Template template)throws MessagingException{
-        String[] recipients = adminRecipients.split(",");
-        if (recipients.length == 0) {
-            throw new IllegalArgumentException("No email recipients to send error email");
-        }
-        VelocityContext context = new VelocityContext();
-        context.put("request", request);
+        context.put("request", payload);
         helper.setTo(recipients);
         final StringWriter writer = new StringWriter();
         template.merge(context, writer);
         helper.setText(writer.toString(), true);
         helper.setFrom(mailUsername);
-        helper.setSubject(String.format("%s error", request.getApplicationId()));
+        helper.setSubject(emailTitle);
         javaMailSender.send(helper.getMimeMessage());
     }
+
+
 }
